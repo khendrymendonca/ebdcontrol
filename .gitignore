@@ -3,9 +3,6 @@ venv/
 .venv/
 env/
 
-# Variáveis de ambiente (NUNCA commitar!)
-.env
-
 # Python cache
 __pycache__/
 *.py[cod]
