@@ -4,11 +4,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Diretório raiz do projeto (logos/)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def create_app():
     app = Flask(
         __name__,
-        template_folder="../templates",
-        static_folder="../static"
+        template_folder=os.path.join(BASE_DIR, "templates"),
+        static_folder=os.path.join(BASE_DIR, "static")
     )
     app.secret_key = os.environ.get("FLASK_SECRET_KEY", "logos-dev-secret-2024")
 
