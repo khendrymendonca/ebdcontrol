@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Notas — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Minhas Notas</h1>
+        <p>Histórico de avaliações</p>
+    </div>
+
+    <!-- Resumo -->
+    <div class="card animate-in" style="background:linear-gradient(135deg,rgba(124,77,255,0.15),rgba(0,229,255,0.08))">
+        <div style="display:flex;align-items:center;gap:20px">
+            <div style="text-align:center">
+                {% set nc = 'aprovado' if media_geral and media_geral >= 7 else 'recuperacao' if media_geral and
+                media_geral >= 5 else 'reprovado' if media_geral else 'pendente' %}
+                <div class="nota-circle {{ nc }}">{{ media_geral if media_geral is not none else '—' }}</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Média Geral</div>
+            </div>
+            <div style="flex:1">
+                {% if posicao_ranking %}
+                <div style="font-size:1.5rem;font-weight:800">{{ posicao_ranking }}º lugar</div>
+                <div style="font-size:0.8rem;color:var(--text-secondary)">de {{ total_alunos }} alunos na turma</div>
+                {% endif %}
+                {% if media_geral is not none %}
+                <div class="progress-bar" style="margin-top:8px">
+                    <div class="progress-fill" data-width="{{ [media_geral * 10, 100] | min }}" style="width:0"></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Notas de Provas -->
+    {% if notas_provas %}
+    <div class="card animate-in-2">
+        <div class="section-title" style="margin-bottom:12px">📝 Provas</div>
+        {% for n in notas_provas %}
+        <div class="list-item">
+            {% set nc = 'aprovado' if n.nota >= 7 else 'recuperacao' if n.nota >= 5 else 'reprovado' %}
+            <div class="nota-circle {{ nc }}">{{ n.nota }}</div>
+            <div class="list-info">
+                <div class="list-name">{{ n.provas.titulo if n.provas else 'Prova' }}</div>
+                <div class="list-sub">Peso: {{ n.provas.peso if n.provas else '—' }}</div>
+                {% if n.feedback %}<div style="font-size:0.75rem;color:var(--primary-light);margin-top:2px">💬 {{
+                    n.feedback }}</div>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Notas de Trabalhos -->
+    {% if notas_trabalhos %}
+    <div class="card animate-in-3">
+        <div class="section-title" style="margin-bottom:12px">📁 Trabalhos</div>
+        {% for n in notas_trabalhos %}
+        <div class="list-item">
+            {% set nc = 'aprovado' if n.nota >= 7 else 'recuperacao' if n.nota >= 5 else 'reprovado' %}
+            <div class="nota-circle {{ nc }}">{{ n.nota }}</div>
+            <div class="list-info">
+                <div class="list-name">{{ n.trabalhos.titulo if n.trabalhos else 'Trabalho' }}</div>
+                <div class="list-sub">Peso: {{ n.trabalhos.peso if n.trabalhos else '—' }}</div>
+                {% if n.feedback %}<div style="font-size:0.75rem;color:var(--primary-light);margin-top:2px">💬 {{
+                    n.feedback }}</div>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not notas_provas and not notas_trabalhos %}
+    <div class="card animate-in-2">
+        <div class="empty-state">
+            <p>Nenhuma nota disponível ainda</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Provas — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Provas</h1>
+        <p>Suas avaliações</p>
+    </div>
+    {% if provas %}
+    {% for prova in provas %}
+    <div class="card animate-in">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div>
+                <div style="font-weight:700">{{ prova.titulo }}</div>
+                {% if prova.descricao %}<div style="font-size:0.8rem;color:var(--text-muted)">{{ prova.descricao }}
+                </div>{% endif %}
+            </div>
+            {% if prova.data %}<span class="badge badge-info">📅 {{ prova.data }}</span>{% endif %}
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+            <span class="badge badge-primary">Peso: {{ prova.peso }}</span>
+            {% if prova.resposta %}
+            {% if prova.resposta.corrigida %}
+            <span class="badge badge-success">✓ Corrigida — {{ prova.resposta.nota }}/10</span>
+            {% else %}
+            <span class="badge badge-warning">⏳ Aguardando correção</span>
+            {% endif %}
+            {% else %}
+            <span class="badge badge-danger">Não respondida</span>
+            {% endif %}
+        </div>
+        {% if not prova.resposta %}
+        <a href="{{ url_for('aluno.responder_prova', prova_id=prova.id) }}" class="btn btn-primary btn-full">
+            Responder Prova
+        </a>
+        {% elif prova.resposta.feedback %}
+        <div
+            style="background:rgba(124,77,255,0.1);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.85rem">
+            <div
+                style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">
+                Feedback do professor</div>
+            {{ prova.resposta.feedback }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card animate-in">
+        <div class="empty-state">
+            <p>Nenhuma prova disponível ainda</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

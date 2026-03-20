@@ -1,0 +1,33 @@
+# Ambiente virtual Python
+venv/
+.venv/
+env/
+
+# Variáveis de ambiente (NUNCA commitar!)
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Uploads locais
+static/uploads/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
+
+# Logs
+*.log

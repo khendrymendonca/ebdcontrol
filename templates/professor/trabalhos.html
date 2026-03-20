@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Trabalhos — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Trabalhos</h1>
+        <p>Gerencie atividades e entregas</p>
+    </div>
+    <button class="btn btn-primary btn-full animate-in" onclick="openModal('modal-novo-trabalho')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Novo Trabalho
+    </button>
+    <div class="animate-in-2" style="margin-top:14px">
+        {% if trabalhos %}
+        {% for trab in trabalhos %}
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                <div>
+                    <div style="font-weight:700">{{ trab.titulo }}</div>
+                    {% if trab.descricao %}<div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">{{
+                        trab.descricao }}</div>{% endif %}
+                </div>
+                <div style="display:flex;gap:6px;margin-left:12px">
+                    <form method="POST" style="margin:0">
+                        <input type="hidden" name="action" value="toggle">
+                        <input type="hidden" name="trabalho_id" value="{{ trab.id }}">
+                        <input type="hidden" name="visivel" value="{{ 'false' if trab.visivel else 'true' }}">
+                        <button type="submit" class="btn btn-secondary btn-icon btn-sm" title="Toggle visibilidade">
+                            {% if trab.visivel %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" width="15">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                            {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                width="15">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>{% endif %}
+                        </button>
+                    </form>
+                    <form method="POST" style="margin:0" onsubmit="return confirm('Deletar trabalho?')">
+                        <input type="hidden" name="action" value="deletar">
+                        <input type="hidden" name="trabalho_id" value="{{ trab.id }}">
+                        <button type="submit" class="btn btn-danger btn-icon btn-sm"><svg viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" width="15">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6l-1 14H6L5 6" />
+                            </svg></button>
+                    </form>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+                <span class="badge badge-primary">Peso: {{ trab.peso }}</span>
+                {% if trab.prazo %}<span class="badge badge-warning">⏰ {{ trab.prazo }}</span>{% endif %}
+                <span class="badge {% if trab.visivel %}badge-success{% else %}badge-muted{% endif %}">{{ '👁 Visível'
+                    if trab.visivel else '🔒 Oculto' }}</span>
+            </div>
+            <!-- Entregas -->
+            {% set ent_list = entregas.get(trab.id, []) %}
+            {% if ent_list %}
+            <div style="background:var(--bg-card2);border-radius:10px;padding:12px">
+                <div class="section-title" style="margin-bottom:8px">{{ ent_list|length }} Entrega(s)</div>
+                {% for ent in ent_list %}
+                <div
+                    style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)">
+                    <div class="list-avatar" style="width:32px;height:32px;font-size:0.75rem">{{
+                        ent.profiles.nome[0].upper() if ent.profiles else '?' }}</div>
+                    <div style="flex:1">
+                        <div style="font-size:0.85rem;font-weight:600">{{ ent.profiles.nome if ent.profiles else 'Aluno'
+                            }}</div>
+                        {% if ent.arquivo_url %}<a href="{{ ent.arquivo_url }}" target="_blank"
+                            class="btn btn-secondary btn-sm"
+                            style="margin-top:4px;font-size:0.72rem;padding:4px 10px">Ver arquivo</a>{% endif %}
+                    </div>
+                    {% if ent.nota is not none %}
+                    <span class="badge badge-success">{{ ent.nota }}</span>
+                    {% else %}
+                    <button class="btn btn-primary btn-sm"
+                        onclick="abrirAvaliacao('{{ ent.id }}','{{ ent.profiles.nome if ent.profiles else '' }}')">Avaliar</button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="font-size:0.8rem;color:var(--text-muted)">Nenhuma entrega ainda</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <p>Nenhum trabalho criado ainda</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Novo Trabalho -->
+<div class="modal-overlay" id="modal-novo-trabalho">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Novo Trabalho</div>
+        <form method="POST">
+            <input type="hidden" name="action" value="criar">
+            <div class="form-group">
+                <label class="form-label">Título</label>
+                <input type="text" name="titulo" class="form-control" placeholder="Ex: Trabalho Final" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descrição</label>
+                <textarea name="descricao" class="form-control" placeholder="Instruções do trabalho..."></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">Prazo</label><input type="date" name="prazo"
+                        class="form-control"></div>
+                <div class="form-group"><label class="form-label">Peso</label><input type="number" name="peso"
+                        class="form-control" value="10"></div>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:12px">
+                <label class="toggle"><input type="checkbox" name="visivel" checked><span
+                        class="toggle-slider"></span></label>
+                <span style="font-size:0.9rem;color:var(--text-secondary)">Visível para alunos</span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Criar Trabalho</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Avaliar Entrega -->
+<div class="modal-overlay" id="modal-avaliar">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Avaliar Entrega</div>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px" id="avaliar-nome"></p>
+        <form method="POST">
+            <input type="hidden" name="action" value="avaliar">
+            <input type="hidden" name="entrega_id" id="avaliar-entrega-id">
+            <div class="form-group">
+                <label class="form-label">Nota (0-10)</label>
+                <input type="number" name="nota" class="form-control" min="0" max="10" step="0.1" placeholder="Ex: 8.5"
+                    required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Feedback</label>
+                <textarea name="feedback" class="form-control" placeholder="Comentários para o aluno..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-success btn-full">Salvar Avaliação</button>
+        </form>
+    </div>
+</div>
+<script>
+    function abrirAvaliacao(entregaId, nome) {
+        document.getElementById('avaliar-entrega-id').value = entregaId;
+        document.getElementById('avaliar-nome').textContent = 'Aluno: ' + nome;
+        openModal('modal-avaliar');
+    }
+</script>
+{% endblock %}

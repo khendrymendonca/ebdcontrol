@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Notas — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Notas & Ranking</h1>
+        <p>Visão geral de desempenho</p>
+    </div>
+    {% if alunos_notas %}
+    <div class="table-container animate-in" style="margin-bottom:14px">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Aluno</th>
+                    {% for p in provas %}<th title="{{ p.titulo }}">P{{ loop.index }}</th>{% endfor %}
+                    {% for t in trabalhos %}<th title="{{ t.titulo }}">T{{ loop.index }}</th>{% endfor %}
+                    <th>Média</th>
+                    <th>Sit.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno in alunos_notas %}
+                <tr>
+                    <td>
+                        <div class="rank-badge rank-{{ loop.index if loop.index <= 3 else 'other' }}"
+                            style="font-size:0.7rem;width:24px;height:24px">{{ loop.index }}</div>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div class="list-avatar" style="width:30px;height:30px;font-size:0.75rem;border-radius:8px">
+                                {{ aluno.nome[0].upper() if aluno.nome else '?' }}</div>
+                            <span style="font-weight:600;font-size:0.85rem">{{ aluno.nome }}</span>
+                        </div>
+                    </td>
+                    {% for p in provas %}
+                    <td style="text-align:center">
+                        {% set nota = aluno.notas_prova.get(p.id) %}
+                        {% if nota is not none %}
+                        <span
+                            style="font-weight:700;color:{% if nota >= 7 %}var(--success){% elif nota >= 5 %}var(--warning){% else %}var(--danger){% endif %}">{{
+                            nota }}</span>
+                        {% else %}<span style="color:var(--text-muted)">—</span>{% endif %}
+                    </td>
+                    {% endfor %}
+                    {% for t in trabalhos %}
+                    <td style="text-align:center">
+                        {% set nota = aluno.notas_trab.get(t.id) %}
+                        {% if nota is not none %}
+                        <span
+                            style="font-weight:700;color:{% if nota >= 7 %}var(--success){% elif nota >= 5 %}var(--warning){% else %}var(--danger){% endif %}">{{
+                            nota }}</span>
+                        {% else %}<span style="color:var(--text-muted)">—</span>{% endif %}
+                    </td>
+                    {% endfor %}
+                    <td>
+                        {% if aluno.media is not none %}
+                        <strong
+                            style="color:{% if aluno.media >= 7 %}var(--success){% elif aluno.media >= 5 %}var(--warning){% else %}var(--danger){% endif %}">{{
+                            aluno.media }}</strong>
+                        {% else %}<span style="color:var(--text-muted)">—</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if aluno.media is none %}<span class="badge badge-muted">S/ nota</span>
+                        {% elif aluno.media >= 7 %}<span class="badge badge-success">Aprovado</span>
+                        {% elif aluno.media >= 5 %}<span class="badge badge-warning">Recup.</span>
+                        {% else %}<span class="badge badge-danger">Reprov.</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card animate-in-2" style="font-size:0.75rem;color:var(--text-muted)">
+        P = Prova &nbsp;|&nbsp; T = Trabalho
+        {% for p in provas %}&nbsp;· P{{ loop.index }}: {{ p.titulo }}{% endfor %}
+        {% for t in trabalhos %}&nbsp;· T{{ loop.index }}: {{ t.titulo }}{% endfor %}
+    </div>
+    {% else %}
+    <div class="card animate-in">
+        <div class="empty-state">
+            <p>Nenhum dado de notas disponível ainda</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

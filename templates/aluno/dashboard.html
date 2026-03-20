@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Início — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Olá, {{ user.nome.split()[0] }} 👋</h1>
+        <p>Seu desempenho acadêmico</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid animate-in">
+        <div class="stat-card cyan">
+            <div class="stat-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg></div>
+            <div class="stat-value">{{ stats.media if stats.media else '—' }}</div>
+            <div class="stat-label">Média</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4" />
+                </svg></div>
+            <div class="stat-value">{{ stats.presenca_pct }}%</div>
+            <div class="stat-label">Presença</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="6" />
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                </svg></div>
+            <div class="stat-value">{{ stats.ranking }}º</div>
+            <div class="stat-label">Ranking</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg></div>
+            <div class="stat-value">{{ stats.trabalhos_pendentes }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+    </div>
+
+    <!-- Barra de presença -->
+    <div class="card animate-in-2">
+        <div class="section-header"><span class="section-title">Frequência</span><span
+                style="font-size:0.85rem;font-weight:700;color:{% if stats.presenca_pct >= 75 %}var(--success){% else %}var(--danger){% endif %}">{{
+                stats.presenca_pct }}%</span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" data-width="{{ stats.presenca_pct }}"
+                style="width:0;background:{% if stats.presenca_pct >= 75 %}linear-gradient(90deg,var(--success),#00b248){% else %}linear-gradient(90deg,var(--danger),#cc0000){% endif %}">
+            </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">Mínimo exigido: 75%</div>
+    </div>
+
+    <!-- Próximo prazo -->
+    {% if proximo_prazo %}
+    <div class="card animate-in-3" style="border-color:rgba(255,215,64,0.3)">
+        <div style="display:flex;align-items:center;gap:12px">
+            <div style="font-size:2rem">⏰</div>
+            <div>
+                <div
+                    style="font-size:0.75rem;color:var(--warning);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+                    Próximo Prazo</div>
+                <div style="font-weight:700">{{ proximo_prazo.titulo }}</div>
+                <div style="font-size:0.8rem;color:var(--text-muted)">{{ proximo_prazo.prazo }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top 5 Ranking -->
+    <div class="card animate-in-3">
+        <div class="section-header"><span class="section-title">🏆 Top da Turma</span><a
+                href="{{ url_for('aluno.notas') }}" class="btn btn-secondary btn-sm">Minhas notas</a></div>
+        {% for aid, media in ranking %}
+        <div class="list-item">
+            <div class="rank-badge rank-{{ loop.index if loop.index <= 3 else 'other' }}">{{ loop.index }}</div>
+            <div style="flex:1">
+                <div class="progress-bar">
+                    <div class="progress-fill" data-width="{{ [media * 10, 100] | min }}" style="width:0"></div>
+                </div>
+            </div>
+            <span style="font-weight:800;font-size:0.95rem;min-width:32px;text-align:right">{{ media }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Aniversariantes -->
+    {% if aniversariantes %}
+    <div class="card animate-in-4">
+        <div class="section-title" style="margin-bottom:12px">🎂 Aniversariantes do mês</div>
+        {% for a in aniversariantes %}
+        <div class="list-item">
+            <div class="list-avatar" style="background:linear-gradient(135deg,var(--accent),var(--warning))">{{
+                a.nome[0].upper() }}</div>
+            <div class="list-name">{{ a.nome }}</div>
+            <span>🎉</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

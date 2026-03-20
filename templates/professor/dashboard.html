@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Olá, {{ user.nome.split()[0] }} 👋</h1>
+        <p>Aqui está o resumo da sua turma</p>
+    </div>
+
+    <!-- Turma Selector -->
+    {% if turmas %}
+    <div class="turma-selector animate-in">
+        {% for t in turmas %}
+        <a href="{{ url_for('professor.trocar_turma', turma_id=t.id) }}"
+            class="turma-chip {% if t.id == turma_id %}active{% endif %}">{{ t.nome }}</a>
+        {% endfor %}
+        <a href="#" class="turma-chip" onclick="openModal('modal-nova-turma');return false">+ Nova</a>
+    </div>
+    {% endif %}
+
+    <!-- Stats Grid -->
+    <div class="stats-grid animate-in-2">
+        <div class="stat-card purple">
+            <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg></div>
+            <div class="stat-value">{{ stats.total_alunos }}</div>
+            <div class="stat-label">Alunos</div>
+        </div>
+        <div class="stat-card cyan">
+            <div class="stat-icon cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg></div>
+            <div class="stat-value">{{ stats.media_geral }}</div>
+            <div class="stat-label">Média Geral</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg></div>
+            <div class="stat-value">{{ stats.presenca_media }}%</div>
+            <div class="stat-label">Presença</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg></div>
+            <div id="trabalhos-pendentes-count" class="stat-value">{{ stats.trabalhos_pendentes }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+    </div>
+
+    <!-- Ranking -->
+    <div class="card animate-in-3">
+        <div class="section-header">
+            <span class="section-title">🏆 Ranking da Turma</span>
+            <a href="{{ url_for('professor.notas') }}" class="btn btn-secondary btn-sm">Ver tudo</a>
+        </div>
+        {% if ranking %}
+        {% for aluno in ranking %}
+        <div class="list-item">
+            <div class="rank-badge rank-{{ loop.index if loop.index <= 3 else 'other' }}">{{ loop.index }}</div>
+            <div class="list-avatar">{{ aluno.nome[0].upper() if aluno.nome else '?' }}</div>
+            <div class="list-info">
+                <div class="list-name">{{ aluno.nome }}</div>
+                <div class="progress-bar" style="margin-top:5px">
+                    <div class="progress-fill" data-width="{{ [aluno.media * 10, 100] | min }}" style="width:0"></div>
+                </div>
+            </div>
+            <div
+                style="font-weight:800;font-size:1.1rem;color:{% if aluno.media >= 7 %}var(--success){% elif aluno.media >= 5 %}var(--warning){% else %}var(--danger){% endif %}">
+                {{ aluno.media }}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <p>Nenhuma nota registrada ainda</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Aniversariantes -->
+    {% if aniversariantes %}
+    <div class="card animate-in-4">
+        <div class="section-header"><span class="section-title">🎂 Aniversariantes do mês</span></div>
+        {% for a in aniversariantes %}
+        <div class="list-item">
+            <div class="list-avatar" style="background:linear-gradient(135deg,var(--accent),var(--warning))">{{
+                a.nome[0].upper() if a.nome else '?' }}</div>
+            <div class="list-info">
+                <div class="list-name">{{ a.nome }}</div>
+                <div class="list-sub">{{ a.data_nasc }}</div>
+            </div>
+            <span>🎉</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Atalhos Rápidos -->
+    <div class="card animate-in-4">
+        <div class="section-header"><span class="section-title">Ações Rápidas</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+            <a href="{{ url_for('professor.presenca') }}" class="btn btn-secondary"
+                style="flex-direction:column;gap:4px;padding:14px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+                <span style="font-size:0.78rem">Fazer Chamada</span>
+            </a>
+            <a href="{{ url_for('professor.provas') }}" class="btn btn-secondary"
+                style="flex-direction:column;gap:4px;padding:14px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span style="font-size:0.78rem">Nova Prova</span>
+            </a>
+            <a href="{{ url_for('professor.materiais') }}" class="btn btn-secondary"
+                style="flex-direction:column;gap:4px;padding:14px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span style="font-size:0.78rem">Upload PDF</span>
+            </a>
+            <a href="{{ url_for('professor.notas') }}" class="btn btn-secondary"
+                style="flex-direction:column;gap:4px;padding:14px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <span style="font-size:0.78rem">Ver Notas</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nova Turma -->
+<div class="modal-overlay" id="modal-nova-turma">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Nova Turma</div>
+        <form method="POST" action="{{ url_for('professor.alunos') }}">
+            <input type="hidden" name="action" value="criar_turma">
+            <div class="form-group">
+                <label class="form-label">Nome da Turma</label>
+                <input type="text" name="nome_turma" class="form-control" placeholder="Ex: Turma A — 2025" required>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="form-group">
+                    <label class="form-label">Ano</label>
+                    <input type="text" name="ano" class="form-control" value="2025">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Semestre</label>
+                    <select name="semestre" class="form-control">
+                        <option value="1">1º</option>
+                        <option value="2">2º</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Criar Turma</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

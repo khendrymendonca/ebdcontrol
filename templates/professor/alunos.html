@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Alunos — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Alunos</h1>
+        <p>Gerencie os alunos da turma</p>
+    </div>
+
+    <button class="btn btn-primary btn-full animate-in" onclick="openModal('modal-novo-aluno')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Adicionar Aluno
+    </button>
+
+    <div class="card animate-in-2" style="margin-top:14px">
+        {% if alunos %}
+        {% for aluno in alunos %}
+        <div class="list-item" id="aluno-{{ aluno.id }}">
+            <div class="list-avatar">{{ aluno.nome[0].upper() if aluno.nome else '?' }}</div>
+            <div class="list-info">
+                <div class="list-name">{{ aluno.nome }}</div>
+                <div class="list-sub">{{ aluno.email }} {% if aluno.data_nasc %}· 🎂 {{ aluno.data_nasc }}{% endif %}
+                </div>
+            </div>
+            <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary btn-icon btn-sm"
+                    onclick="editarAluno('{{ aluno.id }}','{{ aluno.nome }}','{{ aluno.data_nasc or '' }}')"
+                    title="Editar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                </button>
+                <form method="POST" style="margin:0" onsubmit="return confirm('Remover aluno da turma?')">
+                    <input type="hidden" name="action" value="remover">
+                    <input type="hidden" name="aluno_id" value="{{ aluno.id }}">
+                    <button type="submit" class="btn btn-danger btn-icon btn-sm" title="Remover">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14H6L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+            </svg>
+            <p>Nenhum aluno nesta turma ainda</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal: Novo Aluno -->
+<div class="modal-overlay" id="modal-novo-aluno">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Novo Aluno</div>
+        <form method="POST">
+            <input type="hidden" name="action" value="criar">
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" name="nome" class="form-control" placeholder="Nome do aluno" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">E-mail</label>
+                <input type="email" name="email" class="form-control" placeholder="aluno@email.com" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Senha Inicial</label>
+                <input type="text" name="senha" class="form-control" placeholder="Mínimo 6 caracteres" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Data de Nascimento</label>
+                <input type="date" name="data_nasc" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Criar Aluno</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Editar Aluno -->
+<div class="modal-overlay" id="modal-editar-aluno">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Editar Aluno</div>
+        <form method="POST">
+            <input type="hidden" name="action" value="editar">
+            <input type="hidden" name="aluno_id" id="edit-aluno-id">
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" name="nome" id="edit-aluno-nome" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Data de Nascimento</label>
+                <input type="date" name="data_nasc" id="edit-aluno-nasc" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function editarAluno(id, nome, dataNasc) {
+        document.getElementById('edit-aluno-id').value = id;
+        document.getElementById('edit-aluno-nome').value = nome;
+        document.getElementById('edit-aluno-nasc').value = dataNasc;
+        openModal('modal-editar-aluno');
+    }
+</script>
+{% endblock %}

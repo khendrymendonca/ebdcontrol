@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Trabalhos — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Trabalhos</h1>
+        <p>Suas atividades para entregar</p>
+    </div>
+    {% if trabalhos %}
+    {% for trab in trabalhos %}
+    <div class="card animate-in">
+        <div style="font-weight:700;margin-bottom:4px">{{ trab.titulo }}</div>
+        {% if trab.descricao %}<div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px">{{
+            trab.descricao }}</div>{% endif %}
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            <span class="badge badge-primary">Peso: {{ trab.peso }}</span>
+            {% if trab.prazo %}<span class="badge badge-warning">⏰ {{ trab.prazo }}</span>{% endif %}
+            {% if trab.entrega %}
+            {% if trab.entrega.nota is not none %}<span class="badge badge-success">✓ Nota: {{ trab.entrega.nota
+                }}</span>
+            {% else %}<span class="badge badge-info">Entregue — aguardando nota</span>{% endif %}
+            {% else %}<span class="badge badge-danger">Não entregue</span>{% endif %}
+        </div>
+        {% if trab.entrega and trab.entrega.feedback %}
+        <div
+            style="background:rgba(124,77,255,0.1);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.85rem;margin-bottom:12px">
+            <div
+                style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">
+                Feedback</div>
+            {{ trab.entrega.feedback }}
+        </div>
+        {% endif %}
+        <button class="btn {% if trab.entrega %}btn-secondary{% else %}btn-primary{% endif %} btn-full"
+            onclick="openModal('modal-entregar-{{ trab.id }}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            {{ 'Atualizar Entrega' if trab.entrega else 'Enviar Trabalho' }}
+        </button>
+    </div>
+    <!-- Modal de entrega individual -->
+    <div class="modal-overlay" id="modal-entregar-{{ trab.id }}">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-title">{{ trab.titulo }}</div>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="trabalho_id" value="{{ trab.id }}">
+                <div class="form-group">
+                    <label class="form-label">Arquivo</label>
+                    <div class="file-drop">
+                        <input type="file" name="arquivo" accept=".pdf,.doc,.docx,.zip,.py,.js,.txt">
+                        <div class="file-drop-icon">📎</div>
+                        <p>Arraste ou <strong>clique aqui</strong> para selecionar</p>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Enviar</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card animate-in">
+        <div class="empty-state">
+            <p>Nenhum trabalho disponível ainda</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

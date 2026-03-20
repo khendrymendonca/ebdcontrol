@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ prova.titulo }} — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>{{ prova.titulo }}</h1>
+        {% if prova.descricao %}<p>{{ prova.descricao }}</p>{% endif %}
+    </div>
+    <form method="POST">
+        {% if prova.questoes %}
+        {% for q in prova.questoes %}
+        <div class="card animate-in" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+                <div
+                    style="width:28px;height:28px;border-radius:8px;background:rgba(124,77,255,0.15);color:var(--primary-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0">
+                    {{ loop.index }}</div>
+                <div style="flex:1">
+                    <div style="font-weight:600;margin-bottom:12px">{{ q.enunciado }}</div>
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+                        <span class="badge badge-primary">{{ q.valor }} ponto(s)</span>
+                        <span class="badge badge-muted">{{ 'Múltipla Escolha' if q.tipo == 'multipla' else
+                            'Dissertativa' }}</span>
+                    </div>
+                    {% if q.tipo == 'multipla' and q.opcoes %}
+                    {% for opcao in q.opcoes %}
+                    <label
+                        style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border-light);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.2s">
+                        <input type="radio" name="questao_{{ loop.index0 }}" value="{{ loop.index0 }}"
+                            style="width:auto;flex-shrink:0" required>
+                        <span style="font-size:0.9rem">{{ opcao }}</span>
+                    </label>
+                    {% endfor %}
+                    {% else %}
+                    <textarea name="questao_{{ loop.index0 }}" class="form-control"
+                        placeholder="Digite sua resposta aqui..." required style="min-height:100px"></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <p>Esta prova não possui questões</p>
+            </div>
+        </div>
+        {% endif %}
+        {% if prova.questoes %}
+        <button type="submit" class="btn btn-success btn-full animate-in"
+            onclick="return confirm('Confirmar envio da prova? Esta ação não pode ser desfeita.')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18">
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22 11 13 2 9l20-7z" />
+            </svg>
+            Enviar Prova
+        </button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

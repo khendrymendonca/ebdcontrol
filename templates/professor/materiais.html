@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Materiais — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Materiais</h1>
+        <p>PDFs e recursos de aula</p>
+    </div>
+
+    <button class="btn btn-primary btn-full animate-in" onclick="openModal('modal-upload')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        Novo Material
+    </button>
+
+    <div class="animate-in-2" style="margin-top:14px">
+        {% if materiais %}
+        {% for mat in materiais %}
+        <div class="card">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+                <div
+                    style="width:44px;height:44px;border-radius:12px;background:rgba(255,82,82,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:0.95rem">{{ mat.titulo }}</div>
+                    {% if mat.descricao %}<div style="color:var(--text-muted);font-size:0.8rem;margin-top:2px">{{
+                        mat.descricao }}</div>{% endif %}
+                    <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <span class="badge {% if mat.visivel %}badge-success{% else %}badge-muted{% endif %}">
+                            {{ '👁 Visível' if mat.visivel else '🔒 Oculto' }}
+                        </span>
+                        {% if mat.arquivo_url %}
+                        <a href="{{ mat.arquivo_url }}" target="_blank" class="btn btn-secondary btn-sm">Abrir PDF</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                    <form method="POST" style="margin:0">
+                        <input type="hidden" name="action" value="toggle">
+                        <input type="hidden" name="material_id" value="{{ mat.id }}">
+                        <input type="hidden" name="visivel" value="{{ 'false' if mat.visivel else 'true' }}">
+                        <button type="submit" class="btn btn-secondary btn-icon btn-sm"
+                            title="{{ 'Ocultar' if mat.visivel else 'Mostrar' }}">
+                            {% if mat.visivel %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                            {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            {% endif %}
+                        </button>
+                    </form>
+                    <form method="POST" style="margin:0" onsubmit="return confirm('Remover material?')">
+                        <input type="hidden" name="action" value="deletar">
+                        <input type="hidden" name="material_id" value="{{ mat.id }}">
+                        <button type="submit" class="btn btn-danger btn-icon btn-sm">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6l-1 14H6L5 6" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <p>Nenhum material enviado ainda</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal: Upload -->
+<div class="modal-overlay" id="modal-upload">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Novo Material</div>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="upload">
+            <div class="form-group">
+                <label class="form-label">Título</label>
+                <input type="text" name="titulo" class="form-control" placeholder="Ex: Aula 01 — Introdução" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descrição (opcional)</label>
+                <textarea name="descricao" class="form-control" placeholder="Breve descrição do material..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Arquivo PDF</label>
+                <div class="file-drop">
+                    <input type="file" name="arquivo" accept=".pdf,.ppt,.pptx,.doc,.docx">
+                    <div class="file-drop-icon">📄</div>
+                    <p>Arraste o arquivo ou <strong>clique aqui</strong></p>
+                </div>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:12px">
+                <label class="toggle">
+                    <input type="checkbox" name="visivel" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span style="font-size:0.9rem;color:var(--text-secondary)">Visível para alunos</span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Enviar Material</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

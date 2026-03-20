@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Presença — Logos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header animate-in">
+        <h1>Presença</h1>
+        <p>Registre a chamada da turma</p>
+    </div>
+
+    <!-- Data Selector -->
+    <div class="card animate-in" style="padding:14px 18px">
+        <form method="GET" style="display:flex;gap:10px;align-items:center">
+            <input type="date" name="data" class="form-control" value="{{ data_sel }}" style="flex:1">
+            <button type="submit" class="btn btn-secondary btn-sm" style="white-space:nowrap">Ver dia</button>
+        </form>
+    </div>
+
+    <!-- Chamada -->
+    <div class="card animate-in-2">
+        <div class="section-header">
+            <span class="section-title">Chamada — {{ data_sel }}</span>
+            <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary btn-sm" onclick="marcarTodos('presente')">Todos ✓</button>
+                <button class="btn btn-danger btn-sm" onclick="marcarTodos('falta')">Todos ✗</button>
+            </div>
+        </div>
+
+        <form method="POST">
+            <input type="hidden" name="data_aula" value="{{ data_sel }}">
+            {% for aluno in alunos %}
+            <input type="hidden" name="alunos" value="{{ aluno.id }}">
+            {% endfor %}
+
+            {% if alunos %}
+            {% for aluno in alunos %}
+            {% set st = presencas_dia.get(aluno.id, '') %}
+            <div class="presenca-row">
+                <div class="list-avatar" style="width:36px;height:36px;font-size:0.8rem">{{ aluno.nome[0].upper() }}
+                </div>
+                <span style="flex:1;font-weight:500;font-size:0.9rem">{{ aluno.nome }}</span>
+                <div class="presenca-options" data-aluno="{{ aluno.id }}">
+                    <button type="button" class="presenca-btn presente {% if st == 'presente' %}ativo{% endif %}"
+                        data-status="presente">✓</button>
+                    <button type="button" class="presenca-btn falta {% if st == 'falta' %}ativo{% endif %}"
+                        data-status="falta">✗</button>
+                    <button type="button" class="presenca-btn justificada {% if st == 'justificada' %}ativo{% endif %}"
+                        data-status="justificada">J</button>
+                </div>
+                <input type="checkbox" name="presentes" value="{{ aluno.id }}" id="pres-{{ aluno.id }}" {% if
+                    st=='presente' %}checked{% endif %} style="display:none">
+                <input type="checkbox" name="justificados" value="{{ aluno.id }}" id="just-{{ aluno.id }}" {% if
+                    st=='justificada' %}checked{% endif %} style="display:none">
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-success btn-full" style="margin-top:16px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                </svg>
+                Salvar Chamada
+            </button>
+            {% else %}
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                </svg>
+                <p>Adicione alunos à turma primeiro</p>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Histórico -->
+    {% if historico %}
+    <div class="card animate-in-3">
+        <div class="section-title" style="margin-bottom:12px">Histórico Recente</div>
+        {% set datas = [] %}
+        {% for reg in historico %}
+        {% if reg.data not in datas %}
+        {% set _ = datas.append(reg.data) %}
+        <div
+            style="padding:8px 0;border-bottom:1px solid var(--border-light);font-size:0.82rem;color:var(--text-secondary)">
+            {{ reg.data }} —
+            <span style="color:var(--success)">{{ historico | selectattr('data', 'equalto', reg.data) |
+                selectattr('status', 'equalto', 'presente') | list | length }} presentes</span>,
+            <span style="color:var(--danger)">{{ historico | selectattr('data', 'equalto', reg.data) |
+                selectattr('status', 'equalto', 'falta') | list | length }} faltas</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function marcarTodos(status) {
+        document.querySelectorAll('.presenca-options').forEach(group => {
+            group.querySelectorAll('.presenca-btn').forEach(b => b.classList.remove('ativo'));
+            const btn = group.querySelector(`.presenca-btn.${status}`);
+            if (btn) {
+                btn.classList.add('ativo');
+                const alunoId = group.dataset.aluno;
+                document.getElementById('pres-' + alunoId).checked = (status === 'presente');
+                document.getElementById('just-' + alunoId).checked = (status === 'justificada');
+            }
+        });
+    }
+</script>
+{% endblock %}
